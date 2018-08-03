@@ -182,7 +182,7 @@ class Braacket:
             f'{self.league}/player/{uuid1}'
             f'?player_hth={uuid2}')
         soup = BeautifulSoup(r.text, 'html.parser')
-        print(r.text)
+        
 
 test = Braacket('NCMelee')
 
