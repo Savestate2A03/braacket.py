@@ -132,12 +132,14 @@ class Braacket:
             'div.panel-body '
             'div.my-dashboard-values-sub div i.fa-exclamation-triangle') # inactive
         ranking['inactive'] = (len(exclusion_check) > 0)
+        if 'score' in ranking: # one off, maybe do these in bulk later
+            ranking['score'] = int(ranking['score'])
         # example: 
         # {
         #   'rank': 33, (int)
         #   'rank_suffix': 'rd' (str)
         #   'out_of': 2333, (int)
-        #   'score': '1234', (str)
+        #   'score': 1234, (int)
         #   'type': 'TrueSkill™', (str)
         #   'date': '04 December 2017 - 31 December 2018', (str)
         #   'activity requirement': 'Requires 4 tournaments played within last 4 months' (str)
