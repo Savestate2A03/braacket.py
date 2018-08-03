@@ -85,10 +85,31 @@ class Braacket:
             f'{self.league}/player/{uuid}')
         soup = BeautifulSoup(r.text, 'html.parser')
         player_stats = {} # gonna fill this w/ a lot of stuff
+        # :: TAG ::      
+        # tag can be found in: 
         # <tr> -> <td> -> <h4 class='ellipsis'>
         tag = soup.select("tr td h4.ellipsis")[0].get_text().strip()
         player_stats['tag'] = tag
-
+        # :: RANKING :: 
+        ranking_info = soup.select(
+            'section div.row div.col-lg-6 '
+            'div.panel.panel-default.my-box-shadow '
+            'div.panel-body '
+            'div.my-dashboard-values-main')[0].stripped_strings # generator
+        rank_int = int(next(ranking_info)) # rank
+        next(ranking_info) # 'rd', always 'rd' unless braacket fixes it lmao
+        out_of_extract = re.compile(r'\/ ([0-9]+)$')
+        out_of = out_of_extract.match(next(ranking_info)).group(1) # '/ XXXX'
+        out_of_int = int(out_of)
+        # i really wish it didn't return a generator, the next() are ugly
+        ranking = {
+            'rank': rank_int,
+            'out_of': out_of_int 
+        }
+        player_stats['ranking'] = ranking
+        # :: ELIGIBILITY ::
+        # has the player met the eligibility requirements?
+        # ex: 4 tournaments in the past 4 months
         return player_stats
 
 test = Braacket('NCMelee')
