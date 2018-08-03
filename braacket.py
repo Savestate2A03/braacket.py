@@ -174,8 +174,15 @@ class Braacket:
         for stat in stats_table:
             performance[stat[0].lower()] = int(stat[1])
         player_stats['performance'] = performance
-
         return player_stats
+
+    def head_to_head(self, uuid1, uuid2):
+        r = requests.get(
+            'https://braacket.com/league/'
+            f'{self.league}/player/{uuid1}'
+            f'?player_hth={uuid2}')
+        soup = BeautifulSoup(r.text, 'html.parser')
+        print(r.text)
 
 test = Braacket('NCMelee')
 
@@ -185,7 +192,11 @@ pp = pprint.PrettyPrinter(indent=1, width=100)
 # print('---------------------')
 # pp.pprint(test.player_search('s.lsavestate'))
 # print('---------------------')
-pp.pprint(test.player_stats(test.player_search('s.l | savestate')['uuid'])) # savestate
+# pp.pprint(test.player_stats(test.player_search('s.l | savestate')['uuid'])) # savestate
+test.head_to_head(
+    test.player_search('s.l | savestate')['uuid'],
+    test.player_search('bl@ckchris')['uuid']
+    )
 print('=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=')
 # test.player_stats(test.player_search('s.l | savestate')['uuid']) # savestate
 # print('---------------------')
