@@ -29,7 +29,7 @@ class Braacket:
         r = requests.get(
             'https://braacket.com/league/'
             f'{self.league}/player?rows=999999999'
-        ) # praying to god that they don't disable this upperbound
+            ) # dear braacket, please never disable this upperbound
         soup = BeautifulSoup(r.text, 'html.parser')
         # <table class='table table-hover'> -v
         # <tbody> -> <tr> -> <td> -> <a> {player}
@@ -48,18 +48,36 @@ class Braacket:
 
     def get_player(self, tag):
         probability_list = []
+        # use SequenceMatcher to run the match ratio of each
+        # tag in the cache against the searched tag. if the top
+        # match is >.90, we'll automatically choose it, otherwise
+        # return the list of the top 3 matches and their ratios
+        # (user will have to type-check the return value to 
+        # determine the appopriate course of action)
         for key in list(self.player_cache.keys()):
-            probability = SequenceMatcher(None, tag.lower(), key.lower()).ratio()
+            probability = SequenceMatcher(
+                None, tag.lower(), key.lower()
+                ).ratio()
             p_dict = {}
             p_dict['tag'] = key
             p_dict['player_id'] = self.player_cache[key]
             p_dict['probability'] = probability
             probability_list.append(p_dict)
+        # once the probability list is populated,
+        # sort it by probability, most likely to least
         probability_list = sorted(
-            probability_list, key=lambda prob: 1-prob['probability']
-        )
-        # top 3 results
-        probability_list = probability_list[:3]:
+            probability_list, 
+            key=lambda prob: 1-prob['probability'])
+        if probability_list[0]['probability'] >= 0.9:
+            # {
+            #   'tag': matched tag
+            #   'player_id': uuid 
+            #   'probability': probability (float)
+            # }
+            return probability_list[0]
+        # top 3 results, same as above but in a list
+        # sorted from most likely to least likely
+        return probability_list[:3]:
         
 test = Braacket('NCMelee')
 test.get_player('smash.live save state')
