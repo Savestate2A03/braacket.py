@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import requests
 import re 
 from difflib import SequenceMatcher
+import pprint
 
 class Braacket:
     
@@ -68,7 +69,8 @@ class Braacket:
         probability_list = sorted(
             probability_list, 
             key=lambda prob: 1-prob['probability'])
-        if probability_list[0]['probability'] >= 0.9:
+        # magic number .... for now (config?)
+        if probability_list[0]['probability'] >= 0.85: 
             # {
             #   'tag': matched tag
             #   'uuid': uuid 
@@ -123,6 +125,12 @@ class Braacket:
             # a space and make it the value.
             sub_panels_stripped[panel_array[0].lower()] = ' '.join(panel_array[1:])
             ranking = {**ranking, **sub_panels_stripped} # merge into ranking dict
+        exclusion_check = soup.select(
+            'section div.row div.col-lg-6 '
+            'div.panel.panel-default.my-box-shadow '
+            'div.panel-body '
+            'div.my-dashboard-values-sub div i.fa-exclamation-triangle') # inactive
+        ranking['inactive'] = (len(exclusion_check) > 0)
         # example: 
         # {
         #   'rank': 33, (int)
@@ -131,10 +139,19 @@ class Braacket:
         #   'type': 'TrueSkill™', (str)
         #   'date': '04 December 2017 - 31 December 2018', (str)
         #   'activity requirement': 'Requires 4 tournaments played within last 4 months' (str)
+        #   'inactive': True
         # }
         player_stats['ranking'] = ranking
         return player_stats
 
 test = Braacket('NCMelee')
-test.player_search('smash.live save state')
-test.player_stats('A3F079E2-CAB3-463B-8D4E-6F43A0126759')
+
+pp = pprint.PrettyPrinter(indent=1, width=100)
+
+pp.pprint(test.player_search('smash.live save state'))
+print('---------------------')
+pp.pprint(test.player_search('s.lsavestate'))
+print('---------------------')
+pp.pprint(test.player_stats(test.player_search('s.l | savestate')['uuid'])) # savestate
+print('---------------------')
+pp.pprint(test.player_stats('EADCA878-CD4C-4FB1-BBA1-CC48814FE0B8')) # saef
