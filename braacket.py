@@ -96,20 +96,43 @@ class Braacket:
             'div.panel.panel-default.my-box-shadow '
             'div.panel-body '
             'div.my-dashboard-values-main')[0].stripped_strings # generator
-        rank_int = int(next(ranking_info)) # rank
-        next(ranking_info) # 'rd', always 'rd' unless braacket fixes it lmao
+        ranking_info = [text for text in ranking_info] # array !
+        rank_int = int(ranking_info[0]) # rank
         out_of_extract = re.compile(r'\/ ([0-9]+)$')
-        out_of = out_of_extract.match(next(ranking_info)).group(1) # '/ XXXX'
+        out_of = out_of_extract.match(ranking_info[2]).group(1) # '/ XXXX'
         out_of_int = int(out_of)
-        # i really wish it didn't return a generator, the next() are ugly
         ranking = {
             'rank': rank_int,
             'out_of': out_of_int 
         }
+        # get info from the rest of the sub-panels
+        # these can be things like, the date range of
+        # the player, the ranking type, their raw score,
+        # the activity requirements, and whether or not
+        # the player meets said requirement. 
+        sub_panels = soup.select(
+            'section div.row div.col-lg-6 '
+            'div.panel.panel-default.my-box-shadow '
+            'div.panel-body '
+            'div.my-dashboard-values-sub')
+        sub_panels_stripped = {}
+        for panel in sub_panels:
+            panel_array = [text for text in panel.stripped_strings]
+            # take the 1st item, lower its case, and make it the key.
+            # take the rest of the items in the array, and join them with
+            # a space and make it the value.
+            sub_panels_stripped[panel_array[0].lower()] = ' '.join(panel_array[1:])
+            ranking = {**ranking, **sub_panels_stripped} # merge into ranking dict
+        # example: 
+        # {
+        #   'rank': 33, (int)
+        #   'out_of': 2333, (int)
+        #   'score': '1234', (str)
+        #   'type': 'TrueSkill™', (str)
+        #   'date': '04 December 2017 - 31 December 2018', (str)
+        #   'activity requirement': 'Requires 4 tournaments played within last 4 months' (str)
+        # }
         player_stats['ranking'] = ranking
-        # :: ELIGIBILITY ::
-        # has the player met the eligibility requirements?
-        # ex: 4 tournaments in the past 4 months
         return player_stats
 
 test = Braacket('NCMelee')
