@@ -144,8 +144,8 @@ class Braacket:
         #   'inactive': True
         # }
         player_stats['ranking'] = ranking
-        # :: MATCH STATISTICS ::
-        match_stats = {}
+        # :: PERFORMANCE STATISTICS ::
+        performance = {}
         win_rate = soup.select(
             'div.panel.panel-default.my-box-shadow.my-panel-collapsed '
             'div.panel-body div.alert div.my-dashboard-values-main')[0].stripped_strings
@@ -154,9 +154,24 @@ class Braacket:
         win_rate_extract = re.compile(r'([0-9]+)') 
         # get the number, make it a float
         win_rate = float(win_rate_extract.match(win_rate[0]).group(1)) 
-        match_stats['win_rate'] = win_rate/100.0
-
-        player_stats['match_stats'] = match_stats
+        performance['win_rate'] = win_rate/100.0
+        # various stats from the page
+        # these include: wins, draws, losses, +, -, +/-, top 1,
+        #                top 3, top 8, top 16, top 32, worst, and potentially
+        #                more depending on what braacket adds
+        stats_table_prefilter = soup.select(
+            'div.panel.panel-default.my-box-shadow.my-panel-collapsed '
+            'div.panel-body table.table tbody tr')
+        stats_table = []
+        for row in stats_table_prefilter:
+            wdl_item = [text for text in row.stripped_strings]
+            stats_table.append(wdl_item)
+        # lots of stuff uses the css rules, so we're narrowing it to 
+        # just the items that have a stat and a value assigned to that stat
+        stats_table = [item for item in stats_table if len(item) == 2]
+        for stat in stats_table:
+            performance[stat[0].lower()] = int(stat[1])
+        player_stats['performance'] = performance
 
         return player_stats
 
@@ -170,6 +185,6 @@ pp = pprint.PrettyPrinter(indent=1, width=100)
 # print('---------------------')
 pp.pprint(test.player_stats(test.player_search('s.l | savestate')['uuid'])) # savestate
 print('=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=')
-test.player_stats(test.player_search('s.l | savestate')['uuid']) # savestate
+# test.player_stats(test.player_search('s.l | savestate')['uuid']) # savestate
 # print('---------------------')
 # pp.pprint(test.player_stats('EADCA878-CD4C-4FB1-BBA1-CC48814FE0B8')) # saef
