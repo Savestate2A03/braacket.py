@@ -21,15 +21,15 @@ class Braacket:
 
         # player cache is laid out as such:
         # {
-        #   'tag1': 'uid',
-        #   'tag2': 'uid',
-        #   'tag3': 'uid',
+        #   'tag1': 'uuid',
+        #   'tag2': 'uuid',
+        #   'tag3': 'uuid',
         #   ...
         # }
         r = requests.get(
             'https://braacket.com/league/'
-            f'{self.league}/player?rows=999999999'
-            ) # dear braacket, please never disable this upperbound
+            f'{self.league}/player?rows=999999999')
+            # dear braacket, please never disable this upperbound
         soup = BeautifulSoup(r.text, 'html.parser')
         # <table class='table table-hover'> -v
         # <tbody> -> <tr> -> <td> -> <a> {player}
@@ -43,10 +43,10 @@ class Braacket:
             if not player.string:
                 continue
             # match // extract, potential for a mtg fuse spell
-            player_id = url_extract.match(player['href']).group(1)
-            self.player_cache[player.string] = player_id
+            uuid = url_extract.match(player['href']).group(1)
+            self.player_cache[player.string] = uuid
 
-    def get_player(self, tag):
+    def player_search(self, tag):
         probability_list = []
         # use SequenceMatcher to run the match ratio of each
         # tag in the cache against the searched tag. if the top
@@ -60,7 +60,7 @@ class Braacket:
                 ).ratio()
             p_dict = {}
             p_dict['tag'] = key
-            p_dict['player_id'] = self.player_cache[key]
+            p_dict['uuid'] = self.player_cache[key]
             p_dict['probability'] = probability
             probability_list.append(p_dict)
         # once the probability list is populated,
@@ -71,13 +71,26 @@ class Braacket:
         if probability_list[0]['probability'] >= 0.9:
             # {
             #   'tag': matched tag
-            #   'player_id': uuid 
+            #   'uuid': uuid 
             #   'probability': probability (float)
             # }
             return probability_list[0]
         # top 3 results, same as above but in a list
         # sorted from most likely to least likely
-        return probability_list[:3]:
-        
+        return probability_list[:3]
+
+    def player_stats(self, uuid):
+        r = requests.get(
+            'https://braacket.com/league/'
+            f'{self.league}/player/{uuid}')
+        soup = BeautifulSoup(r.text, 'html.parser')
+        player_stats = {} # gonna fill this w/ a lot of stuff
+        # <tr> -> <td> -> <h4 class='ellipsis'>
+        tag = soup.select("tr td h4.ellipsis")[0].get_text().strip()
+        player_stats['tag'] = tag
+
+        return player_stats
+
 test = Braacket('NCMelee')
-test.get_player('smash.live save state')
+test.player_search('smash.live save state')
+test.player_stats('A3F079E2-CAB3-463B-8D4E-6F43A0126759')
