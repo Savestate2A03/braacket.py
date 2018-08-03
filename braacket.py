@@ -144,16 +144,32 @@ class Braacket:
         #   'inactive': True
         # }
         player_stats['ranking'] = ranking
+        # :: MATCH STATISTICS ::
+        match_stats = {}
+        win_rate = soup.select(
+            'div.panel.panel-default.my-box-shadow.my-panel-collapsed '
+            'div.panel-body div.alert div.my-dashboard-values-main')[0].stripped_strings
+        win_rate = [text for text in win_rate] # generator to array
+        # number is at the beginning of the scrape
+        win_rate_extract = re.compile(r'([0-9]+)') 
+        # get the number, make it a float
+        win_rate = float(win_rate_extract.match(win_rate[0]).group(1)) 
+        match_stats['win_rate'] = win_rate/100.0
+
+        player_stats['match_stats'] = match_stats
+
         return player_stats
 
 test = Braacket('NCMelee')
 
 pp = pprint.PrettyPrinter(indent=1, width=100)
 
-pp.pprint(test.player_search('smash.live save state'))
-print('---------------------')
-pp.pprint(test.player_search('s.lsavestate'))
-print('---------------------')
+# pp.pprint(test.player_search('smash.live save state'))
+# print('---------------------')
+# pp.pprint(test.player_search('s.lsavestate'))
+# print('---------------------')
 pp.pprint(test.player_stats(test.player_search('s.l | savestate')['uuid'])) # savestate
-print('---------------------')
-pp.pprint(test.player_stats('EADCA878-CD4C-4FB1-BBA1-CC48814FE0B8')) # saef
+print('=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=')
+test.player_stats(test.player_search('s.l | savestate')['uuid']) # savestate
+# print('---------------------')
+# pp.pprint(test.player_stats('EADCA878-CD4C-4FB1-BBA1-CC48814FE0B8')) # saef
