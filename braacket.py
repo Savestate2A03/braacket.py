@@ -105,7 +105,7 @@ class Braacket:
         out_of_int = int(out_of)
         ranking = {
             'rank': rank_int,
-            'rank_suffix': ranking_info[1]
+            'rank_suffix': ranking_info[1], 
             'out_of': out_of_int 
         }
         # get info from the rest of the sub-panels
