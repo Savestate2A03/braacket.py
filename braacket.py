@@ -272,12 +272,14 @@ pp = pprint.PrettyPrinter(indent=1, width=100)
 
 # pp.pprint(test.player_search('smash.live save state'))
 # print('---------------------')
-# pp.pprint(test.player_search('s.lsavestate'))
+pp.pprint(test.player_search('s.lsavestate'))
+pp.pprint(test.player_search('ssaveste'))
+
 # print('---------------------')
 # pp.pprint(test.player_stats(test.player_search('s.l | savestate')['uuid'])) # savestate
 pp.pprint(test.head_to_head(
     test.player_search('s.l | savestate')['uuid'],
-    test.player_search('ham')['uuid']
+    test.player_search('ihop dan')['uuid']
     ))
 print('=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=')
 # test.player_stats(test.player_search('s.l | savestate')['uuid']) # savestate
