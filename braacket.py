@@ -177,32 +177,55 @@ class Braacket:
         return player_stats
 
     def head_to_head(self, uuid1, uuid2):
-        
+        # use the uuids to open the compare page
         h2h_url = ('https://braacket.com/league/' 
             f'{self.league}/player/{uuid1}'
             f'?player_hth={uuid2}')
         r = requests.get(h2h_url, verify=False)
         soup = BeautifulSoup(r.text, 'html.parser')
+        # use the text 'Head to Head' to search for the relevant info
         h2h_siblings = soup.find(string=re.compile("Head to Head")).parent.next_siblings
         h2h_stats_tag = None
+        # the info we need is somewhere after the area that we find 'Head to Head'.
+        # search for it, make note of the tag, and then break
         for h2h_sibling in h2h_siblings:
+            # it's designated by div.panel-body
             if 'panel-body' in str(h2h_sibling):
                 h2h_stats_tag = h2h_sibling
                 break
+        # create a generator of stripped strings (generators themselves)
+        # for each generator found in the select search
         gen = (x.stripped_strings for x in h2h_stats_tag.select('table tbody tr td'))
+        # h2h_values_list is a list of all the values from the generators run together
         h2h_values_list = []
+        # h2h_values will hold the key-value pairs of relevant info
         h2h_values = {}
+        # for each html tag (already stripped-string versions)
         for tag in gen:
+            # for each piece of text in each stripped-string generator
             for text in tag:
+                # if it's castable to an int, add it to the list.
+                # otherwise, add the text to the list.
                 try: 
                     h2h_values_list.append(int(text))
                 except ValueError:
                     h2h_values_list.append(text)
+        # make a list of all the indices of the ints. then for each one of these
+        # indices, make the element before it the key to said int value. 
         h2h_value_indices = [i for i, x in enumerate(h2h_values_list) if type(x) == int]
         for i in h2h_value_indices:
             h2h_values[h2h_values_list[i-1]] = h2h_values_list[i]
+        # example:
+        # {
+        #    'Win': 0,
+        #    'Draw': 0,
+        #    'Lose': 5,
+        #    'Win rate': 0,
+        #    '+': 3,
+        #    '-': 13,
+        #    '+/-': -10
+        # }
         return h2h_values
-
 
 test = Braacket('NCMelee')
 
