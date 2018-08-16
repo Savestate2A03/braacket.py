@@ -236,13 +236,16 @@ class Braacket:
             for text in tag:
                 matches_values_list.append(text)
         # slightly different logic than above, just get the most recent match.
-        # info is found at fixed offsets
+        # info is found at fixed offsets. if they haven't played, return False for
+        # 'recent'
         match_values = {}
-        match_values['name']  = matches_values_list[0]
-        match_values['score'] = matches_values_list[4]
-        match_values['date']  = matches_values_list[5]
-        
-        h2h_return['recent'] = match_values
+        try:
+            match_values['name']  = matches_values_list[0]
+            match_values['score'] = matches_values_list[4]
+            match_values['date']  = matches_values_list[5]
+            h2h_return['recent']  = match_values
+        except:
+            h2h_return['recent']  = False
 
         # [:: example ::]
         # {
@@ -274,7 +277,7 @@ pp = pprint.PrettyPrinter(indent=1, width=100)
 # pp.pprint(test.player_stats(test.player_search('s.l | savestate')['uuid'])) # savestate
 pp.pprint(test.head_to_head(
     test.player_search('s.l | savestate')['uuid'],
-    test.player_search('bl@ckchris')['uuid']
+    test.player_search('ham')['uuid']
     ))
 print('=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=')
 # test.player_stats(test.player_search('s.l | savestate')['uuid']) # savestate
