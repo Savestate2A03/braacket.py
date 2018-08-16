@@ -29,7 +29,7 @@ class Braacket:
         # }
         r = requests.get(
             'https://braacket.com/league/'
-            f'{self.league}/player?rows=999999999')
+            f'{self.league}/player?rows=999999999', verify=False)
             # dear braacket, please never disable this upperbound
         soup = BeautifulSoup(r.text, 'html.parser')
         # <table class='table table-hover'> -v
@@ -84,7 +84,7 @@ class Braacket:
     def player_stats(self, uuid):
         r = requests.get(
             'https://braacket.com/league/'
-            f'{self.league}/player/{uuid}')
+            f'{self.league}/player/{uuid}', verify=False)
         soup = BeautifulSoup(r.text, 'html.parser')
         player_stats = {} # gonna fill this w/ a lot of stuff
         # :: TAG ::      
@@ -177,12 +177,32 @@ class Braacket:
         return player_stats
 
     def head_to_head(self, uuid1, uuid2):
-        r = requests.get(
-            'https://braacket.com/league/'
+        
+        h2h_url = ('https://braacket.com/league/' 
             f'{self.league}/player/{uuid1}'
             f'?player_hth={uuid2}')
+        r = requests.get(h2h_url, verify=False)
         soup = BeautifulSoup(r.text, 'html.parser')
-        
+        h2h_siblings = soup.find(string=re.compile("Head to Head")).parent.next_siblings
+        h2h_stats_tag = None
+        for h2h_sibling in h2h_siblings:
+            if 'panel-body' in str(h2h_sibling):
+                h2h_stats_tag = h2h_sibling
+                break
+        gen = (x.stripped_strings for x in h2h_stats_tag.select('table tbody tr td'))
+        h2h_values_list = []
+        h2h_values = {}
+        for tag in gen:
+            for text in tag:
+                try: 
+                    h2h_values_list.append(int(text))
+                except ValueError:
+                    h2h_values_list.append(text)
+        h2h_value_indices = [i for i, x in enumerate(h2h_values_list) if type(x) == int]
+        for i in h2h_value_indices:
+            h2h_values[h2h_values_list[i-1]] = h2h_values_list[i]
+        return h2h_values
+
 
 test = Braacket('NCMelee')
 
