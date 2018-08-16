@@ -177,6 +177,8 @@ class Braacket:
         return player_stats
 
     def head_to_head(self, uuid1, uuid2):
+        # note! dates are 1 indexed for all fields
+        h2h_return = {}
         # use the uuids to open the compare page
         h2h_url = ('https://braacket.com/league/' 
             f'{self.league}/player/{uuid1}'
@@ -209,23 +211,35 @@ class Braacket:
                 try: 
                     h2h_values_list.append(int(text))
                 except ValueError:
-                    h2h_values_list.append(text)
+                    h2h_values_list.append(text.lower())
         # make a list of all the indices of the ints. then for each one of these
         # indices, make the element before it the key to said int value. 
         h2h_value_indices = [i for i, x in enumerate(h2h_values_list) if type(x) == int]
         for i in h2h_value_indices:
             h2h_values[h2h_values_list[i-1]] = h2h_values_list[i]
+        h2h_return['stats'] = h2h_values
         # example:
         # {
-        #    'Win': 0,
-        #    'Draw': 0,
-        #    'Lose': 5,
-        #    'Win rate': 0,
-        #    '+': 3,
-        #    '-': 13,
-        #    '+/-': -10
+        #  'stats': {
+        #   'win': 0,
+        #   'draw': 0,
+        #   'lose': 5,
+        #   'win rate': 0,
+        #   '+': 3,
+        #   '-': 13,
+        #   '+/-': -10
+        #  },
+        #  'recent': {
+        #   'name': 'Geeks Weekly 57',
+        #   'date': {
+        #    'year': 2018,
+        #    'month': 8,
+        #    'day': 2
+        #   },
+        #   'scores': [1, 2]
+        #  }
         # }
-        return h2h_values
+        return h2h_return
 
 test = Braacket('NCMelee')
 
