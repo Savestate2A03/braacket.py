@@ -177,8 +177,10 @@ class Braacket:
         return player_stats
 
     def head_to_head(self, uuid1, uuid2):
-        # note! dates are 1 indexed for all fields
         h2h_return = {}
+        # note! dates are 1 indexed for all fields
+
+        # :::::::: STATS ::::::::
         # use the uuids to open the compare page
         h2h_url = ('https://braacket.com/league/' 
             f'{self.league}/player/{uuid1}'
@@ -217,8 +219,32 @@ class Braacket:
         h2h_value_indices = [i for i, x in enumerate(h2h_values_list) if type(x) == int]
         for i in h2h_value_indices:
             h2h_values[h2h_values_list[i-1]] = h2h_values_list[i]
-        h2h_return['stats'] = h2h_values
-        # example:
+        h2h_return['stats'] = h2h_values # add to return object
+
+        # :::::::: RECENT MATCH ::::::::
+        soup = BeautifulSoup(r.text, 'html.parser')
+        # use the text 'Matches history' to search for the relevant info
+        matches_siblings = soup.find(string=re.compile("Matches history")).parent.next_siblings
+        matches_stats_tag = None
+        for matches_sibling in matches_siblings:
+            if 'panel-body' in str(matches_sibling):
+                matches_stats_tag = matches_sibling
+                break
+        gen = (x.stripped_strings for x in matches_stats_tag.select('table tbody tr td'))
+        matches_values_list = []
+        for tag in gen:
+            for text in tag:
+                matches_values_list.append(text)
+        # slightly different logic than above, just get the most recent match.
+        # info is found at fixed offsets
+        match_values = {}
+        match_values['name']  = matches_values_list[0]
+        match_values['score'] = matches_values_list[4]
+        match_values['date']  = matches_values_list[5]
+        
+        h2h_return['recent'] = match_values
+
+        # [:: example ::]
         # {
         #  'stats': {
         #   'win': 0,
@@ -231,12 +257,8 @@ class Braacket:
         #  },
         #  'recent': {
         #   'name': 'Geeks Weekly 57',
-        #   'date': {
-        #    'year': 2018,
-        #    'month': 8,
-        #    'day': 2
-        #   },
-        #   'scores': [1, 2]
+        #   'date': '2018-08-02'
+        #   'score': '1-2'
         #  }
         # }
         return h2h_return
@@ -250,10 +272,10 @@ pp = pprint.PrettyPrinter(indent=1, width=100)
 # pp.pprint(test.player_search('s.lsavestate'))
 # print('---------------------')
 # pp.pprint(test.player_stats(test.player_search('s.l | savestate')['uuid'])) # savestate
-test.head_to_head(
+pp.pprint(test.head_to_head(
     test.player_search('s.l | savestate')['uuid'],
     test.player_search('bl@ckchris')['uuid']
-    )
+    ))
 print('=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=')
 # test.player_stats(test.player_search('s.l | savestate')['uuid']) # savestate
 # print('---------------------')
