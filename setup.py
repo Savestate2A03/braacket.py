@@ -8,4 +8,4 @@ setup(name='braacket',
       author_email='savestate@sav.estate',
       license='MIT',
       packages=['braacket'],
-      requires=['beautifulsoup4', 'requests'])
+      install_requires=['beautifulsoup4', 'requests'])
