@@ -2,7 +2,6 @@ from bs4 import BeautifulSoup
 import requests
 import re 
 from difflib import SequenceMatcher
-import pprint
 
 class Braacket:
     
@@ -265,23 +264,3 @@ class Braacket:
         #  }
         # }
         return h2h_return
-
-test = Braacket('NCMelee')
-
-pp = pprint.PrettyPrinter(indent=1, width=100)
-
-# pp.pprint(test.player_search('smash.live save state'))
-# print('---------------------')
-pp.pprint(test.player_search('s.lsavestate'))
-pp.pprint(test.player_search('ssaveste'))
-
-# print('---------------------')
-# pp.pprint(test.player_stats(test.player_search('s.l | savestate')['uuid'])) # savestate
-pp.pprint(test.head_to_head(
-    test.player_search('s.l | savestate')['uuid'],
-    test.player_search('ihop dan')['uuid']
-    ))
-print('=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=')
-# test.player_stats(test.player_search('s.l | savestate')['uuid']) # savestate
-# print('---------------------')
-# pp.pprint(test.player_stats('EADCA878-CD4C-4FB1-BBA1-CC48814FE0B8')) # saef
