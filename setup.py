@@ -7,4 +7,5 @@ setup(name='braacket',
       author='Savestate',
       author_email='savestate@sav.estate',
       license='MIT',
-      packages=['braacket', 'beautifulsoup4', 'requests'])
+      packages=['braacket'],
+      requires=['beautifulsoup4', 'requests'])
