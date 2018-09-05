@@ -47,6 +47,7 @@ class Braacket:
             self.player_cache[player.string] = uuid
 
     def player_search(self, tag):
+        tag = tag.strip()
         probability_list = []
         # use SequenceMatcher to run the match ratio of each
         # tag in the cache against the searched tag. if the top
@@ -65,20 +66,20 @@ class Braacket:
             probability_list.append(p_dict)
         # once the probability list is populated,
         # sort it by probability, most likely to least
+        for name in probability_list:
+            if tag.lower() in name['tag'].lower():
+                name['probability'] += 1.0
         probability_list = sorted(
             probability_list, 
-            key=lambda prob: 1-prob['probability'])
-        # magic number .... for now (config?)
-        if probability_list[0]['probability'] >= 0.85: 
-            # {
-            #   'tag': matched tag
-            #   'uuid': uuid 
-            #   'probability': probability (float)
-            # }
-            return probability_list[0]
-        # top 3 results, same as above but in a list
-        # sorted from most likely to least likely
-        return probability_list[:3]
+            key=lambda prob: 2-prob['probability'])
+        # [{
+        #   'tag': matched tag
+        #   'uuid': uuid 
+        #   'probability': probability (float)
+        # }, {...}, ... ]
+        # top 8 results
+
+        return probability_list[:8]
 
     def player_stats(self, uuid):
         r = requests.get(
