@@ -50,11 +50,9 @@ class Braacket:
         tag = tag.strip()
         probability_list = []
         # use SequenceMatcher to run the match ratio of each
-        # tag in the cache against the searched tag. if the top
-        # match is >.90, we'll automatically choose it, otherwise
-        # return the list of the top 3 matches and their ratios
-        # (user will have to type-check the return value to 
-        # determine the appopriate course of action)
+        # tag in the cache against the searched tag. sort them
+        # from most likely to least likely. all tags that contain
+        # the substring of -tag- get a boost in relevance. 
         for key in list(self.player_cache.keys()):
             probability = SequenceMatcher(
                 None, tag.lower(), key.lower()
@@ -64,11 +62,14 @@ class Braacket:
             p_dict['uuid'] = self.player_cache[key]
             p_dict['probability'] = probability
             probability_list.append(p_dict)
-        # once the probability list is populated,
-        # sort it by probability, most likely to least
+        # for each tag in the probability_list, if the search
+        # term is a substring, then boost it's relevance
+        # significantly. 
         for name in probability_list:
             if tag.lower() in name['tag'].lower():
                 name['probability'] += 1.0
+        # once the probability list is populated,
+        # sort it by probability, most likely to least
         probability_list = sorted(
             probability_list, 
             key=lambda prob: 2-prob['probability'])
