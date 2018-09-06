@@ -93,21 +93,28 @@ class Braacket:
         tag = soup.select("tr td h4.ellipsis")[0].get_text().strip()
         player_stats['tag'] = tag
         # :: RANKING :: 
-        ranking_info = soup.select(
-            'section div.row div.col-lg-6 '
-            'div.panel.panel-default.my-box-shadow '
-            'div.panel-body '
-            'div.my-dashboard-values-main')[0].stripped_strings # generator
-        ranking_info = [text for text in ranking_info] # array !
-        rank_int = int(ranking_info[0]) # rank
-        out_of_extract = re.compile(r'\/ ([0-9]+)$')
-        out_of = out_of_extract.match(ranking_info[2]).group(1) # '/ XXXX'
-        out_of_int = int(out_of)
-        ranking = {
-            'rank': rank_int,
-            'rank_suffix': ranking_info[1], 
-            'out_of': out_of_int 
-        }
+        try:
+            ranking_info = soup.select(
+                'section div.row div.col-lg-6 '
+                'div.panel.panel-default.my-box-shadow '
+                'div.panel-body '
+                'div.my-dashboard-values-main')[0].stripped_strings # generator
+            ranking_info = [text for text in ranking_info] # array !
+            rank_int = int(ranking_info[0]) # rank
+            out_of_extract = re.compile(r'\/ ([0-9]+)$')
+            out_of = out_of_extract.match(ranking_info[2]).group(1) # '/ XXXX'
+            out_of_int = int(out_of)
+            ranking = {
+                'rank': rank_int,
+                'rank_suffix': ranking_info[1], 
+                'out_of': out_of_int 
+            }
+        except IndexError: #rank -1 means unranked
+            ranking = {
+                'rank': -1,
+                'rank_suffix': 'st', 
+                'out_of': -1
+            }
         # get info from the rest of the sub-panels
         # these can be things like, the date range of
         # the player, the ranking type, their raw score,
@@ -148,31 +155,35 @@ class Braacket:
         player_stats['ranking'] = ranking
         # :: PERFORMANCE STATISTICS ::
         performance = {}
-        win_rate = soup.select(
-            'div.panel.panel-default.my-box-shadow.my-panel-collapsed '
-            'div.panel-body div.alert div.my-dashboard-values-main')[0].stripped_strings
-        win_rate = [text for text in win_rate] # generator to array
-        # number is at the beginning of the scrape
-        win_rate_extract = re.compile(r'([0-9]+)') 
-        # get the number, make it a float
-        win_rate = float(win_rate_extract.match(win_rate[0]).group(1)) 
-        performance['win_rate'] = win_rate/100.0
-        # various stats from the page
-        # these include: wins, draws, losses, +, -, +/-, top 1,
-        #                top 3, top 8, top 16, top 32, worst, and potentially
-        #                more depending on what braacket adds
-        stats_table_prefilter = soup.select(
-            'div.panel.panel-default.my-box-shadow.my-panel-collapsed '
-            'div.panel-body table.table tbody tr')
-        stats_table = []
-        for row in stats_table_prefilter:
-            wdl_item = [text for text in row.stripped_strings]
-            stats_table.append(wdl_item)
-        # lots of stuff uses the css rules, so we're narrowing it to 
-        # just the items that have a stat and a value assigned to that stat
-        stats_table = [item for item in stats_table if len(item) == 2]
-        for stat in stats_table:
-            performance[stat[0].lower()] = int(stat[1])
+        try:
+            win_rate = soup.select(
+                'div.panel.panel-default.my-box-shadow.my-panel-collapsed '
+                'div.panel-body div.alert div.my-dashboard-values-main')[0].stripped_strings
+            win_rate = [text for text in win_rate] # generator to array
+            # number is at the beginning of the scrape
+            win_rate_extract = re.compile(r'([0-9]+)') 
+            # get the number, make it a float
+            win_rate = float(win_rate_extract.match(win_rate[0]).group(1)) 
+            performance['win_rate'] = win_rate/100.0
+            # various stats from the page
+            # these include: wins, draws, losses, +, -, +/-, top 1,
+            #                top 3, top 8, top 16, top 32, worst, and potentially
+            #                more depending on what braacket adds
+            stats_table_prefilter = soup.select(
+                'div.panel.panel-default.my-box-shadow.my-panel-collapsed '
+                'div.panel-body table.table tbody tr')
+            stats_table = []
+            for row in stats_table_prefilter:
+                wdl_item = [text for text in row.stripped_strings]
+                stats_table.append(wdl_item)
+            # lots of stuff uses the css rules, so we're narrowing it to 
+            # just the items that have a stat and a value assigned to that stat
+            stats_table = [item for item in stats_table if len(item) == 2]
+            for stat in stats_table:
+                performance[stat[0].lower()] = int(stat[1])
+        except IndexError:
+            pass
+
         player_stats['performance'] = performance
         return player_stats
 
